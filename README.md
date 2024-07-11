@@ -44,12 +44,16 @@ It utilizes Sony's Spresense microcontroller as a processing module.
 | WP7.2-12 | Battery (12 V, 7,2 Ah) | Kung Long Batteries Industrial | ¥3000 | 1 |
 
 ## Hardware Assembling
+
 ### Water-proof enclosures
 First, choose a case to house the Spresense. While we have published 3D models of cases that can be printed with a 3D printer, you can also use commercially available waterproof boxes for outdoor installations. If you opt for a commercially available case, select one with enough space to accommodate the Spresense Extension Board (at least 90mm x 90mm x 30mm). Commercially available cases tend to offer better waterproofing, so if you're installing the device near a pond or in a high-humidity environment, it might be better to go with a commercially available case.
+
 ### Placing microphones
 Next, arrange each microphone at equal intervals around the circumference of an 8cm diameter circle. If you are using a printable case, attach the microphones as shown in the picture below, and route the wires inside the case. Seal the wire entry points with adhesive. If you are using a commercially available case, drill holes in the case to attach the microphones directly. We also provide a 3D model for a microphone mounting plate, which you can print and use with any cases. To avoid rain damage, please install the microphones on the underside of the case.
+
 <img src = "Figures/mic2.jpg" width=300>
 <img src = "Figures/mic1.jpg" width=300>
+
 ### Wiring microphones
 Finally, wire the microphones. I recommend reading [the official tutorial](https://developer.sony.com/spresense/tutorials-sample-projects/spresense-tutorials/using-multiple-microphone-inputs-with-spresense) and [the hardware documentation](https://developer.sony.com/spresense/development-guides/hw_docs_en.html#_how_to_use_microphones) as well.
 1. Attatch Sony Spresense to the Spresense Extension Board  
@@ -66,7 +70,9 @@ The 3D models were designed using Onshape and free to use and modify. See [the O
 ## Software Installation
 1. Installing ArduinoIDE   
 2. Setting up your Sony Spresense   
-For Step1. and 2., please refer to the [official tutorial](https://developer.sony.com/spresense/development-guides/arduino_set_up_en.html).
+
+>For Step1. and 2., please refer to the [official tutorial](https://developer.sony.com/spresense/development-guides/arduino_set_up_en.html).
+
 3. Setting recording options  
 See [the Arduino Sketch](Arduino/timelapse_recorder/timelapse_recorder.ino) for more detail.    
 You can set recording schedule, channels of recordings, sampling rate, and audio codec.
