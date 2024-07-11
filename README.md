@@ -51,8 +51,7 @@ First, choose a case to house the Spresense. While we have published 3D models o
 ### Placing microphones
 Next, arrange each microphone at equal intervals around the circumference of an 8cm diameter circle. If you are using a printable case, attach the microphones as shown in the picture below, and route the wires inside the case. Seal the wire entry points with adhesive. If you are using a commercially available case, drill holes in the case to attach the microphones directly. We also provide a 3D model for a microphone mounting plate, which you can print and use with any cases. To avoid rain damage, please install the microphones on the underside of the case.
 
-<img src = "Figures/mic2.jpg" width=300>
-<img src = "Figures/mic1.jpg" width=300>
+<img src = "Figures/mic2.jpg" width=300><img src = "Figures/mic1.jpg" width=300>
 
 ### Wiring microphones
 Finally, wire the microphones. I recommend reading [the official tutorial](https://developer.sony.com/spresense/tutorials-sample-projects/spresense-tutorials/using-multiple-microphone-inputs-with-spresense) and [the hardware documentation](https://developer.sony.com/spresense/development-guides/hw_docs_en.html#_how_to_use_microphones) as well.
