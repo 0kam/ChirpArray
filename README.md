@@ -64,12 +64,12 @@ The pin assignment of the Spresense Extension Board is shown as below. Follow th
 The 3D models were designed using Onshape and free to use and modify. See [the Onshape document](https://cad.onshape.com/documents/03e8f32e7241855707f43321/w/463fb24775ae6009ebde1d43/e/08f62e0ab2deafdc8f3bd898?renderMode=0&uiState=667e794788fb99170249fb00).
 
 ## Software Installation
-1. Installing ArduinoIDE
-2. Setting up your Sony Spresense  
+1. Installing ArduinoIDE   
+2. Setting up your Sony Spresense   
 For Step1. and 2., please refer to the [official tutorial](https://developer.sony.com/spresense/development-guides/arduino_set_up_en.html).
-3. Setting recording options
-See [the Arduino Sketch](Arduino/timelapse_recorder/timelapse_recorder.ino) for more detail. You can set recording schedule, channels of recordings, sampling rate, and audio codec.
+3. Setting recording options  
+See [the Arduino Sketch](Arduino/timelapse_recorder/timelapse_recorder.ino) for more detail.    
+You can set recording schedule, channels of recordings, sampling rate, and audio codec.
 
 ## How can I choose batteries and micro-SD cards?
-
 See the article for more detail (*Preparing)
