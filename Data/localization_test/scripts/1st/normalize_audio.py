@@ -34,7 +34,7 @@ def preprocess_segments(path, out, sr_to=16000):
         os.makedirs(out_dir)
     torchaudio.save(out, wav, sr_to)
 
-files = glob('/home/okamoto/Projects/SpresenseOutdoorMicArray/localization_test/wavs/sources/*.wav')
+files = glob('Projects/SpresenseOutdoorMicArray/localization_test/wavs/sources/*.wav')
 out_files = [f.replace('sources', 'normalized') for f in files]
 out_files = [f.replace(Path(f).suffix, '.wav') for f in out_files]
 
@@ -42,7 +42,7 @@ for f, out in zip(files, out_files):
     preprocess_segments(f, out)
 
 
-files = glob('/home/okamoto/Projects/SpresenseOutdoorMicArray/localization_test/wavs/sources/*.mp3')
+files = glob('Projects/SpresenseOutdoorMicArray/localization_test/wavs/sources/*.mp3')
 out_files = [f.replace('sources', 'normalized') for f in files]
 out_files = [f.replace(Path(f).suffix, '.wav') for f in out_files]
 

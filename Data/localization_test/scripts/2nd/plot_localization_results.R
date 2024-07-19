@@ -1,6 +1,6 @@
 library(tidyverse)
 
-setwd("/home/okamoto/Projects/beemic/Data/localization_test/")
+setwd("~/Projects/beemic/Data/localization_test/")
 
 calc_point <- function(d1, d2) {
   d1r <- d1 / 180 * pi

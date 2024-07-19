@@ -1,10 +1,10 @@
 /*
 ---------------------
 Name: timelapse_recorder.ino
-Author: R. Okamoto
+Author: ********
 Started: 2023/1/30
 Purpose: To perform time-lapse audio recordings using Sony Spresense
-Reference: https://github.com/0kam/ChirpArray
+Reference: https://github.com/###/####
 ---------------------
 Description:
 This script is for making time-lapse audio recoder with Sony Spresense.
@@ -205,7 +205,7 @@ void setRTC()
       SpGnssTime *time = &NavData.time;
   
       // Check if the acquired UTC time is accurate
-      if (time->year < 2000) {
+      if (time->year > 2000) {
         RtcTime now = RTC.getTime();
         // Convert SpGnssTime to RtcTime
         RtcTime gps(time->year, time->month, time->day,
