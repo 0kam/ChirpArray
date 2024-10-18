@@ -21,10 +21,10 @@ calc_point <- function(d1, d2) {
 }
 
 calc_deg <- function(xm, ym, xs, ys) { # x_mic, x_source
-  # マイクの位置に原点を移す
+  # move origin to mic
   x = xs - xm
   y = ys - ym
-  # 角度計算
+  # calculate degree
   deg = atan(y / x) * 180 / pi
   if (deg < 0) {
     deg <- 180 + deg
@@ -171,7 +171,6 @@ df %>%
   #group_by(degree, distance) %>%
   summarize_all(mean)
 
-# 角度のバイアスを引いてみる
 biases <- df %>%
   pivot_wider(id_cols = c(sound, degree, distance), names_from = c(type), values_from = c(x, y, micR, micL)) %>%
   mutate(

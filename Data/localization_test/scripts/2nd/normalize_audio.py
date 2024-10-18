@@ -9,25 +9,26 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 import math
 
+# For preparing wav files for the localization test
 def preprocess_segments(path, out, sr_to=16000):
     wav, sr = torchaudio.load(path)
-    # ステレオであればモノラルに変換
+    # stereo to mono
     if wav.shape[0] == 2:
         wav = wav.mean(axis=0, keepdim=True)
-    # ハイパスをかける
+    # high-pass filter
     out_dir = Path(out).parent
     sp = out_dir.parts[-1]
     if sp != 'other_sounds':
         wav = highpass_biquad(wav, sr, cutoff_freq=300)
-    # リサンプリング
+    # resample
     wav = wav.numpy()[0]
     wav = resample(wav, math.floor(
         wav.shape[0] / sr * sr_to
     ))
-    # 正規化
+    # normalize
     wav = torch.tensor(wav).unsqueeze(0)
     wav = wav / wav.abs().max() * 0.8
-    # 16bitに変換
+    # save as 16-bit PCM
     wav = (wav * 32767).to(torch.int16)
     out_dir = Path(out).parent
     if out_dir.exists() == False:

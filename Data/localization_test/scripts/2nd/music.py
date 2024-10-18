@@ -9,6 +9,8 @@ import pandas as pd
 nfft = 2048
 
 def get_doa(audio_path, R, sp):
+    # define frequency range based on species
+    # to be used in the DOA estimation
     if sp == "aburazemi":
         freq_range = [4000, 7000]
     elif sp == "higurashi":
@@ -29,7 +31,7 @@ def get_doa(audio_path, R, sp):
     doa = pra.doa.NormMUSIC(R, fs, nfft, num_src=2, )
     #doa = pra.doa.FRIDA(R, fs, nfft, num_src=1)
     doa.locate_sources(X, freq_range=freq_range)
-    # DOAを取得し、radianからdegreeに変換
+    # DoAs
     azimuth_recon = (doa.azimuth_recon / np.pi * 180)[-1]
     return azimuth_recon
 

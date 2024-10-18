@@ -34,8 +34,7 @@ for dt, cond in dt2cond.items():
     
     audio, rate = sf.read(audio_path)
     
-    # ラベルが始まる時間。音源がラベルより進んでいる場合は正の値、遅れている場合は負の値
-    # 以下はMicRにのみ適用する（ラベルはMicLでつける）
+    # Offset
 
     if (mic == "micR") & (dt == "20231216_1405"):
       offset = 51.209 - 50.222
