@@ -47,9 +47,10 @@ It utilizes Sony's Spresense microcontroller as a processing module.
 
 ### Water-proof enclosures
 First, choose a case to house the Spresense. While we have published 3D models of cases that can be printed with a 3D printer, you can also use commercially available waterproof boxes for outdoor installations. If you opt for a commercially available case, select one with enough space to accommodate the Spresense Extension Board (at least 90mm x 90mm x 30mm). Commercially available cases tend to offer better waterproofing, so if you're installing the device near a pond or in a high-humidity environment, it might be better to go with a commercially available case.
+![](Figures/cases.jpg)
 
 ### Placing microphones
-Next, arrange each microphone at equal intervals around the circumference of an 8cm diameter circle. If you are using a printable case, attach the microphones as shown in the picture below, and route the wires inside the case. Seal the wire entry points with adhesive. If you are using a commercially available case, drill holes in the case to attach the microphones directly. We also provide a 3D model for a microphone mounting plate, which you can print and use with any cases. To avoid rain damage, please install the microphones on the underside of the case.
+Next, arrange each microphone at equal intervals around the circumference of an 8cm diameter circle. If you are using a printable case, attach the microphones as shown in the picture below, and route the wires inside the case. Seal the wire entry points with adhesive. If you are using a commercially available case, drill holes in the case to attach the microphones directly. We also provide a 3D model for a microphone mounting plate, which you can print and use with any cases (in `3Dprintables/off_the_shelf_cases/MicrophoneAdaptor.stl`). To avoid rain damage, please install the microphones on the underside of the case.
 
 <img src = "Figures/mic2.jpg" width=300><img src = "Figures/mic1.jpg" width=300>
 
