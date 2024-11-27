@@ -1,4 +1,5 @@
 # `ChirpArray`: a low-cost, easy-to-build microphone array for long-term ecoacoustic monitoring 
+[![DOI](https://zenodo.org/badge/819257287.svg)](https://doi.org/10.5281/zenodo.14227066)
 ## Overview
 
 `ChirpArray` is a microphone array for outdoor recording projects.  
