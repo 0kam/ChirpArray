@@ -10,7 +10,7 @@ nfft = 2048
 
 def get_doa(audio_path, R, sp):
     # define frequency range based on species
-    # to be used in the DOA estimation
+    # to be used in the DOA estimation (kHz)
     if sp == "aburazemi":
         freq_range = [4000, 7000]
     elif sp == "higurashi":
@@ -28,10 +28,11 @@ def get_doa(audio_path, R, sp):
     audio, fs = sf.read(audio_path)
     X = pra.transform.stft.analysis(audio, nfft, nfft // 2)
     X = X.transpose([2, 1, 0])
+    # NormMUSIC methods for DOA estimation
     doa = pra.doa.NormMUSIC(R, fs, nfft, num_src=2, )
-    #doa = pra.doa.FRIDA(R, fs, nfft, num_src=1)
     doa.locate_sources(X, freq_range=freq_range)
     # DoAs
+    ## right: 0deg, front: 90deg, left: 180deg, back: 270deg
     azimuth_recon = (doa.azimuth_recon / np.pi * 180)[-1]
     return azimuth_recon
 
@@ -52,10 +53,13 @@ for c in sorted(conditions):
         for mic in ["micL", "micR"]:
             if mic == "micL":
                 # Mic Positions
+                # Below is the correct positions of the microphones
                 R = np.array([[0.0, 0.04], [0.04, 0.0], [0.0, -0.04], [-0.04, 0.0]]).T
             else:
+                # I missplaced the microphones in the right ChirpArray (micR)
                 R = np.array([[0.0, 0.04], [-0.04, 0.0], [0.0, -0.04], [0.04, 0.0]]).T
             audio_path = f"recordings/separated/2nd/{mic}/{c}/{s}"
+            # DoA 
             doa = get_doa(audio_path, R, s.replace(".wav", ""))
             print(f"{mic}: {doa}")
             res["condition"].append(c)

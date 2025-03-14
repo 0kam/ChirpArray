@@ -1,9 +1,9 @@
 # `ChirpArray`: a low-cost, easy-to-build microphone array for long-term ecoacoustic monitoring 
 [![DOI](https://zenodo.org/badge/819257287.svg)](https://doi.org/10.5281/zenodo.14227066)
 ## Overview
-
 `ChirpArray` is a microphone array for outdoor recording projects.  
 It utilizes Sony's Spresense microcontroller as a processing module.
+See https://doi.org/10.1111/2041-210X.14474 for more detail.
 
 ![](Figures/overview.jpg)
 
@@ -44,6 +44,9 @@ It utilizes Sony's Spresense microcontroller as a processing module.
 | SA-BA10 | Solar Charge Controller | DENRYO | ¥4000 | 1 |
 | WP7.2-12 | Battery (12 V, 7,2 Ah) | Kung Long Batteries Industrial | ¥3000 | 1 |
 
+### *Optional* recommended off-the-shelf waterproof box
+[Takachi BCAP151509G](https://www.takachi-el.co.jp/assets/attachments/images/BCAP151509G.pdf) (¥1,600)
+
 ## Hardware Assembling
 
 ### Water-proof enclosures
@@ -79,4 +82,24 @@ See [the Arduino Sketch](Arduino/timelapse_recorder/timelapse_recorder.ino) for 
 You can set recording schedule, channels of recordings, sampling rate, and audio codec.
 
 ## How can I choose batteries and micro-SD cards?
-See the article for more detail (*Preparing)
+![](Figures/consumption.png)
+
+## How to cite
+ Okamoto, R., & Oguma, H. (2025). ChirpArray: A low-cost, easy-to-construct microphone array for long-term ecoacoustic monitoring. Methods in Ecology and Evolution, 16, 302–308. https://doi.org/10.1111/2041-210X.14474 
+
+```
+@article{https://doi.org/10.1111/2041-210X.14474,
+author = {Okamoto, Ryotaro and Oguma, Hiroyuki},
+title = {ChirpArray: A low-cost, easy-to-construct microphone array for long-term ecoacoustic monitoring},
+journal = {Methods in Ecology and Evolution},
+volume = {16},
+number = {2},
+pages = {302-308},
+keywords = {automated recording unit, ecoacoustics, microphone array},
+doi = {https://doi.org/10.1111/2041-210X.14474},
+url = {https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.14474},
+eprint = {https://besjournals.onlinelibrary.wiley.com/doi/pdf/10.1111/2041-210X.14474},
+abstract = {Abstract Advances in passive acoustic monitoring (PAM) have highlighted the importance of recording devices and audio recognition techniques in ecosystem monitoring. This study introduces ChirpArray, a cost-effective and easily assembled microphone array for long-term ecoacoustic monitoring of outdoor ecosystems. The ChirpArray system features a four-channel microphone array that estimates sound source directions, aids in identifying individual animals and provides a detailed behavioural analysis. Unlike previous microphone arrays, ChirpArray is low-cost, low-power and waterproof, making it ideal for extended-field monitoring. It is a fully open source and is constructed from readily available materials, ensuring broad accessibility for applications ranging from local citizen projects to large-scale landscape recordings. This study details the power, storage consumption and localization performance of ChirpArray. Current measurements show that a small solar-power set-up can continuously operate the system. Localization tests using loudspeakers have yielded promising results. ChirpArray is a compact, energy-efficient microphone array designed for long-term outdoor recording, offering considerable advantages in ecoacoustic monitoring. Its exceptionally low power consumption allows for efficient and flexible deployment, making it an ideal solution for extended-field monitoring and large-scale landscape recordings.},
+year = {2025}
+}
+```
