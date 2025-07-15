@@ -1,10 +1,11 @@
 /*
 ---------------------
 Name: timelapse_recorder.ino
-Author: ********
+Author: Ryotaro Okamoto
 Started: 2023/1/30
+Last Modified: 2025/07/15
 Purpose: To perform time-lapse audio recordings using Sony Spresense
-Reference: https://github.com/###/####
+Reference: https://doi.org/10.1111/2041-210X.14474
 ---------------------
 Description:
 This script is for making time-lapse audio recoder with Sony Spresense.
@@ -50,8 +51,9 @@ typedef struct {
 
 /* Time-lapse Parameters
 -----------------------------------------------------------------------------------------------*/
-schedule s = {1, 24, {0, 5, 10, 15}}; // {start time (O'clock), end time (O'clock), {start time in every hour}}
+schedule s = {17,7, {0,10, 20, 30, 40, 50}}; // {start time (O'clock), end time (O'clock), {start time in every hour}}
 // Above schedule means that the recording starts at 0min, 5min, 10min, 15min in every hour from 1:00 to 24:00.
+//If you specify s = {17,7,{0,20,40}}, The recording will be start at 17:00 and stop at 7:00 (7:20 and 7:40 will not be created).
 /*---------------------------------------------------------------------------------------------*/
 
 /* Audio Parameters
@@ -69,7 +71,7 @@ Example: Recording 20 min audio in every O'clock
 schedule s = {1, 24, {0, 5, 10, 15}}; // Start recording at 0min, 5min, 10min, 15min in every hour
 static const int32_t recording_time = 290; // 290 sec = 4min 50sec (10 sec for finishing recording)
 */
-static const int32_t recording_time = 290;
+static const int32_t recording_time = 300;
 
 /*----------
 The gain of the microphone.
@@ -77,7 +79,7 @@ The range is 0 to 21 [dB] for analog microphones and -78.5 to 0 [dB] for digital
 For an analog microphone, specify an integer value multiplied by 10 for input_gain, for example, 100 when setting 10 [dB].
 For a digital microphone, specify an integer value multiplied by 100 for input_gain, for example -5 when setting -0.05 [dB].
 */
-static const int32_t gain = 50; // Max gain is 210, that means 21dB
+static const int32_t gain = 100; // Max gain is 210, that means 21dB
 
 /* ----------
 Using digital mic? 
@@ -89,14 +91,14 @@ static const bool is_digital = false;
 Mono or Stereo? 
 AS_CHANNEL_STEREO, AS_CHANNEL_STEREO, or AS_CHANNEL_4CH 
 */
-static const int32_t channel = AS_CHANNEL_MONO;
+static const int32_t channel = AS_CHANNEL_4CH;
 
 /*---------- 
 The sumpling rate. MP3 supports 48kHz ( AS_SAMPLINGRATE_48000 ) 
 WAV supports 16000, 48000, 192000.
 Note that 192 kHz recording is not available in 4CH recording due to the writing speed to the SD card.
 */
-static const int32_t sr = AS_SAMPLINGRATE_48000;
+static const int32_t sr = AS_SAMPLINGRATE_16000;
 
 /* ----------
 The output directory to save audio files */
@@ -111,6 +113,11 @@ static const uint8_t  recoding_bit_length = 16; // Bitrate of wav recording. 16 
 
 /* For timelapse operation
 -----------------------------------------------------------------------------------------------*/
+// Define when to start recording
+static const int recording_start_second = 0; // start recording at 0 sec of each minutes
+// Wating time between boot and recording
+static const int boot_to_record_delay = 15; // boot 10 sec earlier than the recording time
+
 const char* boot_cause_strings[] = {
   "Power On Reset with Power Supplied",
   "System WDT expired or Self Reboot",
@@ -187,8 +194,8 @@ void setRTC()
   assert(ret == 0);
   
   Gnss.select(GPS); // GPS
-  Gnss.select(GLONASS); // Glonass
   Gnss.select(QZ_L1CA); // QZSS  
+  Gnss.select(QZ_L1S);
 
   ret = Gnss.start();
   assert(ret == 0);
@@ -205,7 +212,8 @@ void setRTC()
       SpGnssTime *time = &NavData.time;
   
       // Check if the acquired UTC time is accurate
-      if (time->year > 2000) {
+      Serial.println(time->year);
+      if (time->year > 2000 && time->year < 2100) {
         RtcTime now = RTC.getTime();
         // Convert SpGnssTime to RtcTime
         RtcTime gps(time->year, time->month, time->day,
@@ -246,7 +254,7 @@ void setLowPower()
 {
   bootcause_e bc = LowPower.bootCause();
   if ((bc == POR_SUPPLY) || (bc == POR_NORMAL)) {
-    Serial.println("Beemic starting!");
+    Serial.println("ChirpArray starting!");
   } else {
     Serial.println("wakeup from deep sleep");
   }
@@ -254,24 +262,36 @@ void setLowPower()
   printBootCause(bc);
 }
 
-void findMinute(schedule s, int *next_minute, int *next_hour, RtcTime &rtc)
+void findMinute(schedule s, int *next_minute, int *next_hour, int *next_date, RtcTime &rtc)
 {
   bool find_m = false;
   int i;
   int m_len = sizeof(s.m) / sizeof(int);
+  
+  // Find a minute later than current time
   for (i = 0; i < m_len; i++)
   {
-    Serial.println(s.m[i]); 
     if (s.m[i] > rtc.minute()){
       *next_minute = s.m[i];
       *next_hour = rtc.hour();
+      *next_date = rtc.day();  // No date change since it's within the same hour
       find_m = true;
       break;
     }
-    if (!find_m)
+  }
+  
+  // If no minute found later than current time, use the first minute of next hour
+  if (!find_m)
+  {
+    *next_minute = s.m[0];
+    *next_hour = rtc.hour() + 1;
+    *next_date = rtc.day();
+    
+    // Handle case when hour exceeds 24
+    if (*next_hour >= 24)
     {
-      *next_minute = s.m[0];
-      *next_hour = rtc.hour() + 1;
+      *next_hour = 0;
+      *next_date = rtc.day() + 1;
     }
   }
 }
@@ -281,42 +301,69 @@ int getNextAlarm(schedule s, RtcTime &rtc)
   int next_hour;
   int next_minute = s.m[0];
   int next_date = rtc.day();
-  if (s.start_h > s.end_h)
+  
+  if (s.start_h > s.end_h)  // Date-crossing schedule (e.g., 17:00~5:00)
   {
-    if (rtc.hour() < s.start_h)
+    if (rtc.hour() < s.start_h)  // Current time is before start time
     {
-      if (rtc.hour() < s.end_h)
+      if (rtc.hour() < s.end_h)  // Current time is before end time (within recording period)
       {
-        findMinute(s, &next_minute, &next_hour, rtc);
+        findMinute(s, &next_minute, &next_hour, &next_date, rtc);
       }
-      else
+      else  // Current time is outside recording period (e.g., between 5:00~17:00)
       {
         next_hour = s.start_h;
+        next_minute = s.m[0];
+        next_date = rtc.day();  // Start time of today
       }      
     }
-    else
+    else  // Current time is after start time (within recording period)
     {
-      findMinute(s, &next_minute, &next_hour, rtc);
+      findMinute(s, &next_minute, &next_hour, &next_date, rtc);
+      
+      // Important: Handle case when next recording time exceeds end time
+      if (next_hour >= 24)  // When it goes to next day
+      {
+        if ((next_hour % 24) >= s.end_h)  // When it exceeds end time of next day
+        {
+          next_hour = s.start_h;
+          next_minute = s.m[0];
+          next_date = rtc.day() + 1;  // Start time of next day
+        }
+      }
     }
   }
-  else
+  else  // Normal schedule (no date crossing)
   {
     if ((rtc.hour() >= s.start_h) & (rtc.hour() <= s.end_h))
     {
-      findMinute(s, &next_minute, &next_hour, rtc);
+      findMinute(s, &next_minute, &next_hour, &next_date, rtc);
     } else if (rtc.hour() < s.start_h) 
     {
       next_hour = s.start_h;
+      next_minute = s.m[0];
+      next_date = rtc.day();
     }
     else
     {
       next_hour = s.start_h;
-      next_date += 1;
+      next_minute = s.m[0];
+      next_date = rtc.day() + 1;
     }
   }
-  RtcTime rtc_to_alarm = RtcTime(rtc.year(), rtc.month(), next_date, next_hour, next_minute, 0);
-  String str_now = printClock(rtc_to_alarm); 
-  Serial.println("The next boot time is " + str_now);
+  
+  // Specify recording start time down to seconds
+  RtcTime rtc_record_start = RtcTime(rtc.year(), rtc.month(), next_date, 
+                                     next_hour, next_minute, recording_start_second);
+  
+  // Boot time is boot_to_record_delay seconds before recording start time
+  RtcTime rtc_to_alarm = rtc_record_start - boot_to_record_delay;
+  
+  String str_record = printClock(rtc_record_start); 
+  String str_boot = printClock(rtc_to_alarm);
+  Serial.println("Next recording time: " + str_record);
+  Serial.println("Next boot time: " + str_boot);
+  
   int sleep_sec = rtc_to_alarm.unixtime() - rtc.unixtime();
   if (sleep_sec < 0)
   {
@@ -324,6 +371,7 @@ int getNextAlarm(schedule s, RtcTime &rtc)
   }
   return sleep_sec;
 }
+
 /*---------------------------------------------------------------------------------------------*/
 
 
@@ -523,6 +571,23 @@ bool rec(String file_name)
   return true;
 }
 
+  /* Wait for recording time
+  ---------------------------------------------*/  
+void waitUntilRecordTime()
+{
+  RtcTime now = RTC.getTime();
+  int target_second = recording_start_second;
+  Serial.println("Wating...");
+
+  while (now.second() != target_second)
+  {
+    delay(10); // check time every 10ms
+    now = RTC.getTime();
+    Watchdog.kick();
+  }
+  Serial.println("Recording time reached! Starting recording...");
+}
+
 /*---------------------------------------------------------------------------------------------*/
 
 
@@ -533,14 +598,14 @@ void setup()
   /* For timelapse operation
   ---------------------------------------------*/
   Serial.begin(115200);
-  while (!Serial);
+  delay(1000);
   Serial.println("Starting!");
   setRTC();
   setLowPower();
   /* For audio recording
   ---------------------------------------------*/  
-  Watchdog.begin();
   initAudio();
+  Watchdog.begin();
   Watchdog.start(wd_time);
 }
 
@@ -551,23 +616,29 @@ RtcTime now;
 
 void loop()
 {
-  now = RTC.getTime();
-  // Display the current time every a second
+  // 指定時刻まで待機
+  waitUntilRecordTime();
+  
+  // 録音開始
+  RtcTime now = RTC.getTime();
   String str_now = printClock(now);
   file_name = out_dir + String("/") + str_now + ext;
   rec_ok = rec(file_name);
+  
   if (!rec_ok)
   {
     Serial.println("Failed recording! Restarting...");
     while (true)
     {
       delay(1000);
-      Serial.println(String("Watchdog timer ramains..." + (Watchdog.timeleft()/1000) + String("sec")));
+      Serial.println(String("Watchdog timer remains..." + (Watchdog.timeleft()/1000) + String("sec")));
     }
   }
+  
   Watchdog.kick();
   now = RTC.getTime();
   sleep_sec = getNextAlarm(s, now);
+  
   if (sleep_sec > 0)
   {
     Serial.print("Go to deep sleep...");
