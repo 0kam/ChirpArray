@@ -49,6 +49,17 @@ typedef struct {
 #define BAUDRATE 115200
 #define MY_TIMEZONE_IN_SECONDS (9 * 60 * 60) // 9 * 60 * 60 means JST. Modify if required since the GNSS time is UTC.
 
+enum operation_mode_t {
+  MODE_TIMELAPSE,
+  MODE_CONTINUOUS
+};
+
+/* Operation mode
+-----------------------------------------------------------------------------------------------*/
+static const operation_mode_t operation_mode = MODE_TIMELAPSE;
+static const int continuous_start_index = 1;
+/*---------------------------------------------------------------------------------------------*/
+
 /* Time-lapse Parameters
 -----------------------------------------------------------------------------------------------*/
 schedule s = {17,7, {0,10, 20, 30, 40, 50}}; // {start time (O'clock), end time (O'clock), {start time in every hour}}
@@ -170,6 +181,7 @@ void printBootCause(bootcause_e bc)
 }
 
 SpGnss Gnss;
+int continuous_index = continuous_start_index;
 
 String printClock(RtcTime &rtc)
 {
@@ -181,6 +193,13 @@ String printClock(RtcTime &rtc)
         );
   String str = String(buf);
   return str;
+}
+
+String printSequenceNumber(int index)
+{
+  char buf[13];
+  sprintf(buf, "%06d", index);
+  return String(buf);
 }
 
 void setRTC()
@@ -389,6 +408,19 @@ File myFile;
 
 bool ErrEnd = false;
 
+String getContinuousFileName()
+{
+  String file_name;
+  do
+  {
+    String str_index = printSequenceNumber(continuous_index);
+    file_name = out_dir + String("/") + str_index + ext;
+    continuous_index++;
+  } while (theSD.exists(file_name));
+
+  return file_name;
+}
+
 /**
  * @brief Audio attention callback
  *
@@ -595,13 +627,20 @@ void waitUntilRecordTime()
 -----------------------------------------------------------------------------------------------*/
 void setup()
 {
-  /* For timelapse operation
+  /* For operation mode
   ---------------------------------------------*/
   Serial.begin(115200);
   delay(1000);
   Serial.println("Starting!");
-  setRTC();
-  setLowPower();
+  if (operation_mode == MODE_TIMELAPSE)
+  {
+    setRTC();
+    setLowPower();
+  }
+  else
+  {
+    Serial.println("Continuous mode: skip GNSS time sync and deep sleep.");
+  }
   /* For audio recording
   ---------------------------------------------*/  
   initAudio();
@@ -616,14 +655,22 @@ RtcTime now;
 
 void loop()
 {
-  // 指定時刻まで待機
-  waitUntilRecordTime();
-  
-  // 録音開始
-  RtcTime now = RTC.getTime();
-  String str_now = printClock(now);
-  file_name = out_dir + String("/") + str_now + ext;
-  rec_ok = rec(file_name);
+  if (operation_mode == MODE_CONTINUOUS)
+  {
+    file_name = getContinuousFileName();
+    rec_ok = rec(file_name);
+  }
+  else
+  {
+    // 指定時刻まで待機
+    waitUntilRecordTime();
+    
+    // 録音開始
+    RtcTime now = RTC.getTime();
+    String str_now = printClock(now);
+    file_name = out_dir + String("/") + str_now + ext;
+    rec_ok = rec(file_name);
+  }
   
   if (!rec_ok)
   {
@@ -636,12 +683,16 @@ void loop()
   }
   
   Watchdog.kick();
-  now = RTC.getTime();
-  sleep_sec = getNextAlarm(s, now);
-  
-  if (sleep_sec > 0)
+
+  if (operation_mode == MODE_TIMELAPSE)
   {
-    Serial.print("Go to deep sleep...");
-    LowPower.deepSleep(sleep_sec);
-  } 
+    now = RTC.getTime();
+    sleep_sec = getNextAlarm(s, now);
+    
+    if (sleep_sec > 0)
+    {
+      Serial.print("Go to deep sleep...");
+      LowPower.deepSleep(sleep_sec);
+    }
+  }
 }
